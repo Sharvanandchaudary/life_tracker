@@ -191,16 +191,16 @@ elif page == "😴 Sleep":
     st.subheader("🛌 Recent Sleep Logs")
     cursor.execute("SELECT * FROM sleep_logs ORDER BY log_date DESC LIMIT 5")
     rows = cursor.fetchall()
-    for row in rows:
-        st.markdown(f"""
-        **🗓️ Date:** {row[1]}  
-        - 🛏 Bedtime: {row[2]}
-        - 🌅 Wake time: {row[3]}
-        - 😌 Quality: {row[4]} / 5
-        - 🌙 Core Sleep: {row[5]}
-        - ⏱️ Duration: {row[6]} hrs
-        ---
-        ")
+for row in rows:
+    st.markdown(f"""
+    **🗓️ Date:** {row[1]}  
+    - 🛏 Bedtime: {row[2]}
+    - 🌅 Wake time: {row[3]}
+    - 😌 Quality: {row[4]} / 5
+    - 🌙 Core Sleep: {row[5]}
+    - ⏱️ Duration: {row[6]} hrs
+    ---
+    """)
 
 # -----------------------------------
 # 📖 Diary Tracker
