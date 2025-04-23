@@ -1,10 +1,18 @@
 import sqlite3
+import os
 from datetime import date
 
-DB_PATH = "data/life.db"
+# Ensure data folder exists
+DB_FOLDER = "data"
+os.makedirs(DB_FOLDER, exist_ok=True)
+
+DB_PATH = os.path.join(DB_FOLDER, "life.db")
 
 def connect_db():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
+
+# ... (rest of the code stays the same)
+
 
 def init_db():
     conn = connect_db()
