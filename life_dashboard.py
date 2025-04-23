@@ -201,14 +201,14 @@ for row in rows:
 
 
 # -----------------------------------
-# 📖 Diary Tracker
+# Diary Tracker
 # -----------------------------------
-elif page == "📖 Diary":
-    st.header("📖 Daily Accomplishments")
+elif page == "Diary":
+    st.header("Daily Accomplishments")
 
     with st.form("diary_form"):
         entry = st.text_area("What did you accomplish today?")
-        submitted = st.form_submit_button("📝 Submit Diary Entry")
+        submitted = st.form_submit_button("Submit Diary Entry")
 
         if submitted:
             today = str(date.today())
@@ -219,58 +219,11 @@ elif page == "📖 Diary":
             conn.commit()
             st.success("Diary entry saved!")
 
-
     # View past entries
-    st.subheader("📅 Past Diary Entries")
+    st.subheader("Past Diary Entries")
     cursor.execute("SELECT * FROM diary_logs ORDER BY log_date DESC LIMIT 10")
     rows = cursor.fetchall()
     for row in rows:
-    st.markdown(f"**Date:** {row[1]}")
-    st.markdown(f"> {row[2]}")
-    st.markdown("---")
-
-
-conn.close()
-
-
-# -----------------------------------
-# 📊 Dashboard Visualization
-# -----------------------------------
-if page == "📊 Dashboard":
-    st.header("📊 Weekly and Monthly Analytics")
-
-    def load_data(query):
-        df = pd.read_sql_query(query, conn)
-        df['log_date'] = pd.to_datetime(df['log_date'])
-        return df
-
-    # Study chart
-    st.subheader("📚 Study Hours")
-    df_study = load_data("SELECT log_date, topic, duration FROM study_logs")
-    if not df_study.empty:
-        st.plotly_chart(px.bar(df_study, x="log_date", y="duration", color="topic", title="Study Duration by Topic"))
-
-    # Finance chart
-    st.subheader("💰 Finance Summary")
-    df_fin = load_data("SELECT log_date, income, expense FROM finance_logs")
-    if not df_fin.empty:
-        df_fin['net'] = df_fin['income'] - df_fin['expense']
-        st.plotly_chart(px.line(df_fin, x="log_date", y=["income", "expense", "net"], title="Daily Finance Overview"))
-
-    # Debt pie chart
-    st.subheader("💳 Debt Composition")
-    df_debt = pd.read_sql_query("SELECT category, SUM(amount) as total FROM debts GROUP BY category", conn)
-    if not df_debt.empty:
-        st.plotly_chart(px.pie(df_debt, names='category', values='total', title='Debt Breakdown by Type'))
-
-    # Sleep quality
-    st.subheader("😴 Sleep Quality & Duration")
-    df_sleep = load_data("SELECT log_date, duration, sleep_quality FROM sleep_logs")
-    if not df_sleep.empty:
-        col1, col2 = st.columns(2)
-        with col1:
-            st.plotly_chart(px.line(df_sleep, x="log_date", y="duration", title="Sleep Duration Over Time"))
-        with col2:
-            st.plotly_chart(px.line(df_sleep, x="log_date", y="sleep_quality", title="Sleep Quality Over Time"))
-
-conn.close()
+        st.markdown(f"**Date:** {row[1]}")
+        st.markdown(f"> {row[2]}")
+        st.markdown("---")
