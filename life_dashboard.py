@@ -212,10 +212,10 @@ elif page == "Diary":
 
         if submitted:
             today = str(date.today())
-            cursor.execute("""
-                INSERT OR REPLACE INTO diary_logs (log_date, entry)
-                VALUES (?, ?)
-            """, (today, entry))
+            cursor.execute(
+                "INSERT OR REPLACE INTO diary_logs (log_date, entry) VALUES (?, ?)",
+                (today, entry)
+            )
             conn.commit()
             st.success("Diary entry saved!")
 
