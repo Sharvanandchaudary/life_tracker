@@ -225,11 +225,10 @@ elif page == "📖 Diary":
     cursor.execute("SELECT * FROM diary_logs ORDER BY log_date DESC LIMIT 10")
     rows = cursor.fetchall()
     for row in rows:
-        st.markdown(f"""
-        **🗓️ {row[1]}**
-        > {row[2]}
-        ---
-        ")
+    st.markdown(f"**Date:** {row[1]}")
+    st.markdown(f"> {row[2]}")
+    st.markdown("---")
+
 
 conn.close()
 
