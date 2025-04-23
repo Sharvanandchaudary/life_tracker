@@ -186,21 +186,19 @@ elif page == "😴 Sleep":
             """, (today, bed_time.strftime("%H:%M"), wake_time.strftime("%H:%M"), quality, core_sleep, duration))
             conn.commit()
             st.success(f"Sleep log saved! Total sleep: {duration} hours")
-
-    # Display past logs
-    st.subheader("🛌 Recent Sleep Logs")
-    cursor.execute("SELECT * FROM sleep_logs ORDER BY log_date DESC LIMIT 5")
-    rows = cursor.fetchall()
+# Display past logs
+st.subheader("🛌 Recent Sleep Logs")
+cursor.execute("SELECT * FROM sleep_logs ORDER BY log_date DESC LIMIT 5")
+rows = cursor.fetchall()
 for row in rows:
-    st.markdown(f"""
-    **🗓️ Date:** {row[1]}  
-    - 🛏 Bedtime: {row[2]}
-    - 🌅 Wake time: {row[3]}
-    - 😌 Quality: {row[4]} / 5
-    - 🌙 Core Sleep: {row[5]}
-    - ⏱️ Duration: {row[6]} hrs
-    ---
-    """)
+    st.markdown(f"**Date:** {row[1]}")
+    st.markdown(f"- Bedtime: {row[2]}")
+    st.markdown(f"- Wake time: {row[3]}")
+    st.markdown(f"- Quality: {row[4]} / 5")
+    st.markdown(f"- Core Sleep: {row[5]}")
+    st.markdown(f"- Duration: {row[6]} hrs")
+    st.markdown("---")
+
 
 # -----------------------------------
 # 📖 Diary Tracker
@@ -220,6 +218,7 @@ elif page == "📖 Diary":
             """, (today, entry))
             conn.commit()
             st.success("Diary entry saved!")
+
 
     # View past entries
     st.subheader("📅 Past Diary Entries")
