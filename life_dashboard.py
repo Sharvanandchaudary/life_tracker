@@ -66,10 +66,7 @@ else:
 with st.sidebar:
     st.image("https://i.imgur.com/2V5cF3P.png", width=100)  # Placeholder profile pic
     st.title("🌟 Good Morning, User")
-    nav = st.sidebar.radio("Choose Section", [
-    "Overview", "Study", "Finance", "Sleep", "Diary", "Things to Learn", "Dashboard"
-])
-
+    nav = st.radio("Navigate", ["🏠 Home", "📚 Study", "💰 Finance", "😴 Sleep", "📖 Diary", "📈 Trends"])
 
 # Load data
 def load_data():
@@ -301,30 +298,3 @@ elif nav == "📈 Trends":
         "Time": [22, 30, 34, 19, 22]
     })
     st.plotly_chart(px.pie(prod_df, names="Category", values="Time", hole=0.4), use_container_width=True)
-# -----------------------------------
-# 🧠 Things to Learn
-# -----------------------------------
-if page == "Things to Learn":
-    st.header("🧠 Things to Learn")
-
-    with st.form("learn_form"):
-        topic = st.text_input("New learning topic or concept")
-        submitted = st.form_submit_button("➕ Add Topic")
-
-        if submitted and topic.strip():
-            today = str(date.today())
-            cursor.execute("INSERT INTO learn_list (log_date, topic) VALUES (?, ?)", (today, topic))
-            conn.commit()
-            st.success("Topic added to your learning list!")
-
-    st.subheader("📅 Topics by Date")
-    cursor.execute("SELECT DISTINCT log_date FROM learn_list ORDER BY log_date DESC")
-    dates = [row[0] for row in cursor.fetchall()]
-    selected_date = st.selectbox("Select a date", dates)
-
-    if selected_date:
-        st.markdown(f"### 📘 Topics on {selected_date}")
-        cursor.execute("SELECT topic FROM learn_list WHERE log_date = ?", (selected_date,))
-        topics = cursor.fetchall()
-        for t in topics:
-            st.markdown(f"- {t[0]}")
