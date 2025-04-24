@@ -11,23 +11,36 @@ DB_PATH = os.path.join(DB_FOLDER, "life.db")
 def connect_db():
     return sqlite3.connect(DB_PATH, check_same_thread=False)
 
-# ... (rest of the code stays the same)
-
-
 def init_db():
     conn = connect_db()
     cursor = conn.cursor()
 
-    # Create study_logs table
+    # Create study_logs table (support multiple topics per day)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS study_logs (
-            log_date TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            log_date TEXT,
             topic TEXT,
             summary TEXT,
-            duration REAL,
-            interview_given TEXT,
-            book_read TEXT,
-            next_plan TEXT
+            duration REAL
+        )
+    ''')
+
+    # Create job applications table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS job_apps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            log_date TEXT NOT NULL,
+            count INTEGER NOT NULL
+        )
+    ''')
+
+    # Create learn_list table (Things to Learn)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS learn_list (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            log_date TEXT,
+            topic TEXT
         )
     ''')
 
