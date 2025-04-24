@@ -164,19 +164,48 @@ elif nav == "📖 Diary":
 
 # TRENDS
 elif nav == "📈 Trends":
-    st.header("📈 Weekly Trends")
+    st.header("📈 Weekly Trends & Productivity")
 
-    if not df['study'].empty:
-        st.subheader("📚 Study Duration")
-        st.plotly_chart(px.bar(df['study'], x="log_date", y="duration", color="topic", title="Study Hours"), use_container_width=True)
+    col1, col2 = st.columns(2)
 
-    if not df['finance'].empty:
-        st.subheader("💸 Income vs Expense")
-        df['finance']['net'] = df['finance']['income'] - df['finance']['expense']
-        st.plotly_chart(px.line(df['finance'], x="log_date", y=["income", "expense", "net"]), use_container_width=True)
+    # 📚 Study Chart
+    with col1:
+        st.subheader("Study Duration")
+        df_study = pd.read_sql_query("SELECT log_date, topic, duration FROM study_logs", conn)
+        if not df_study.empty:
+            df_study["log_date"] = pd.to_datetime(df_study["log_date"])
+            st.plotly_chart(px.bar(df_study, x="log_date", y="duration", color="topic", title="Study Time by Topic"), use_container_width=True)
 
-    if not df['sleep'].empty:
-        st.subheader("😴 Sleep Patterns")
-        col1, col2 = st.columns(2)
-        col1.plotly_chart(px.line(df['sleep'], x="log_date", y="duration", title="Duration"), use_container_width=True)
-        col2.plotly_chart(px.line(df['sleep'], x="log_date", y="sleep_quality", title="Quality"), use_container_width=True)
+    # 💰 Finance Chart
+    with col2:
+        st.subheader("Income vs Expense")
+        df_fin = pd.read_sql_query("SELECT log_date, income, expense FROM finance_logs", conn)
+        if not df_fin.empty:
+            df_fin["log_date"] = pd.to_datetime(df_fin["log_date"])
+            df_fin["net"] = df_fin["income"] - df_fin["expense"]
+            st.plotly_chart(px.line(df_fin, x="log_date", y=["income", "expense", "net"], title="Finance Trends"), use_container_width=True)
+
+    col3, col4 = st.columns(2)
+
+    # 😴 Sleep Chart
+    with col3:
+        st.subheader("Sleep Duration")
+        df_sleep = pd.read_sql_query("SELECT log_date, duration FROM sleep_logs", conn)
+        if not df_sleep.empty:
+            df_sleep["log_date"] = pd.to_datetime(df_sleep["log_date"])
+            st.plotly_chart(px.line(df_sleep, x="log_date", y="duration", title="Sleep Hours"), use_container_width=True)
+
+    with col4:
+        st.subheader("Sleep Quality")
+        df_sleep_q = pd.read_sql_query("SELECT log_date, sleep_quality FROM sleep_logs", conn)
+        if not df_sleep_q.empty:
+            df_sleep_q["log_date"] = pd.to_datetime(df_sleep_q["log_date"])
+            st.plotly_chart(px.line(df_sleep_q, x="log_date", y="sleep_quality", title="Sleep Quality"), use_container_width=True)
+
+    # 🔄 Productivity Donut (simulated categories)
+    st.subheader("🎯 Productivity Breakdown (Simulated)")
+    prod_df = pd.DataFrame({
+        "Category": ["Very Productive", "Productive", "Neutral", "Distracting", "Very Distracting"],
+        "Time": [22, 30, 34, 19, 22]
+    })
+    st.plotly_chart(px.pie(prod_df, names="Category", values="Time", hole=0.4), use_container_width=True)
