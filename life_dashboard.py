@@ -146,21 +146,33 @@ elif nav == "😴 Sleep":
 
 # DIARY FORM
 elif nav == "📖 Diary":
-    st.header("📖 Daily Diary")
+    st.header("📖 Daily Accomplishments")
+
     with st.form("diary_form"):
         entry = st.text_area("What did you accomplish today?")
-        submitted = st.form_submit_button("Save Entry")
-        if submitted:
-            today = str(datetime.today().date())
-            cursor.execute("INSERT OR REPLACE INTO diary_logs (log_date, entry) VALUES (?, ?)", (today, entry))
-            conn.commit()
-            st.success("Diary saved!")
+        submitted = st.form_submit_button("Submit Diary Entry")
 
-    st.subheader("📅 Past Entries")
-    cursor.execute("SELECT * FROM diary_logs ORDER BY log_date DESC LIMIT 10")
-    for row in cursor.fetchall():
-        st.markdown(f"**{row[1]}**\n> {row[2]}")
-        st.markdown("---")
+        if submitted:
+            today = str(date.today())
+            cursor.execute(
+                "INSERT OR REPLACE INTO diary_logs (log_date, entry) VALUES (?, ?)",
+                (today, entry)
+            )
+            conn.commit()
+            st.success("Diary entry saved!")
+
+    st.subheader("📅 Past Diary Entries")
+    try:
+        cursor.execute("SELECT * FROM diary_logs ORDER BY log_date DESC LIMIT 10")
+        rows = cursor.fetchall()
+        for row in rows:
+            if len(row) >= 2:
+                st.markdown(f"**{row[0]}**\n> {row[1]}")
+                st.markdown("---")
+            else:
+                st.warning("⚠️ Skipped malformed diary entry.")
+    except Exception as e:
+        st.error(f"Error loading diary logs: {e}")
 
 # TRENDS
 elif nav == "📈 Trends":
