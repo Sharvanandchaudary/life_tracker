@@ -15,18 +15,18 @@ def init_db():
     conn = connect_db()
     cursor = conn.cursor()
 
-    # Create study_logs table (support multiple topics per day)
+    # --- Study Logs ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS study_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            log_date TEXT,
-            topic TEXT,
+            log_date TEXT NOT NULL,
+            topic TEXT NOT NULL,
             summary TEXT,
             duration REAL
         )
     ''')
 
-    # Create job applications table
+    # --- Job Applications Tracker ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS job_apps (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,16 +35,16 @@ def init_db():
         )
     ''')
 
-    # Create learn_list table (Things to Learn)
+    # --- Things to Learn Tracker ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS learn_list (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            log_date TEXT,
-            topic TEXT
+            log_date TEXT NOT NULL,
+            topic TEXT NOT NULL
         )
     ''')
 
-    # Create finance_logs table
+    # --- Finance Logs ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS finance_logs (
             log_date TEXT,
@@ -53,7 +53,7 @@ def init_db():
         )
     ''')
 
-    # Create debts table
+    # --- Debts ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS debts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,7 +63,7 @@ def init_db():
         )
     ''')
 
-    # Create sleep_logs table
+    # --- Sleep Logs ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS sleep_logs (
             log_date TEXT PRIMARY KEY,
@@ -75,7 +75,7 @@ def init_db():
         )
     ''')
 
-    # Create diary_logs table
+    # --- Diary Logs ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS diary_logs (
             log_date TEXT PRIMARY KEY,
