@@ -129,16 +129,14 @@ if nav == "🏠 Home":
     col3.metric("Avg Sleep", f"{df['sleep']['duration'].tail(7).mean():.1f} hrs")
     col4.metric("New Debts", f"${df['debt']['total'].sum():.2f}" if not df['debt'].empty else "$0")
 # STUDY FORM
-elif nav == "📚 Study":
-    st.header("📚 Multi-topic Study Tracker")
+elif page == "Study":
+    st.header("📚 Study Tracker")
 
-    with st.form("multi_study_form"):
+    with st.form("study_form"):
         topic = st.text_input("Topic you studied")
-        summary = st.text_area("What did you learn?")
+        summary = st.text_area("Summary of what you learned")
         duration = st.number_input("Duration (in hours)", min_value=0.0, step=0.25)
-        job_apps = st.number_input("Job Applications Today (Optional)", min_value=0, step=1)
-
-        submitted = st.form_submit_button("✅ Add to Study Log")
+        submitted = st.form_submit_button("Add to Study Log")
 
         if submitted:
             today = str(date.today())
@@ -146,13 +144,22 @@ elif nav == "📚 Study":
                 "INSERT INTO study_logs (log_date, topic, summary, duration) VALUES (?, ?, ?, ?)",
                 (today, topic, summary, duration)
             )
-            if job_apps > 0:
-                cursor.execute(
-                    "INSERT INTO job_apps (log_date, count) VALUES (?, ?)",
-                    (today, job_apps)
-                )
             conn.commit()
-            st.success("Study topic added successfully!")
+            st.success("Study log added!")
+
+    st.subheader("📅 View Study History")
+    cursor.execute("SELECT DISTINCT log_date FROM study_logs ORDER BY log_date DESC")
+    available_dates = [row[0] for row in cursor.fetchall()]
+    selected_date = st.selectbox("Select a date to view logs", available_dates)
+
+    if selected_date:
+        cursor.execute("SELECT topic, summary, duration FROM study_logs WHERE log_date = ?", (selected_date,))
+        for topic, summary, duration in cursor.fetchall():
+            st.markdown(f"**🗓 Date:** {selected_date}")
+            st.markdown(f"- **Topic:** {topic}")
+            st.markdown(f"- **Summary:** {summary}")
+            st.markdown(f"- **Duration:** {duration} hrs")
+            st.markdown("---")
 
     # Past logs display
     st.subheader("📅 View Study History")
