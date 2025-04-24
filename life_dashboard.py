@@ -129,7 +129,7 @@ if nav == "🏠 Home":
     col3.metric("Avg Sleep", f"{df['sleep']['duration'].tail(7).mean():.1f} hrs")
     col4.metric("New Debts", f"${df['debt']['total'].sum():.2f}" if not df['debt'].empty else "$0")
 # STUDY FORM
-elif page == "Study":
+elif nav == "Study":
     st.header("📚 Study Tracker")
 
     with st.form("study_form"):
