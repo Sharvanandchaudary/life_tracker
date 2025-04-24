@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -10,6 +11,56 @@ conn = connect_db()
 cursor = conn.cursor()
 
 st.set_page_config(page_title="Life Tracker", layout="wide")
+# -------------------------
+# ⏳ Daily Time Tracker
+# -------------------------
+import pytz
+from datetime import datetime, timedelta
+
+# Set timezone
+CST = pytz.timezone("America/Chicago")
+now = datetime.now(CST)
+
+# Set time range: 8:00 AM to 11:59 PM
+start_time = now.replace(hour=8, minute=0, second=0, microsecond=0)
+end_time = now.replace(hour=23, minute=59, second=0, microsecond=0)
+
+st.markdown("## ⏳ Daily Time Tracker")
+
+if now < start_time:
+    st.warning("⚠️ Your day hasn’t started yet! It begins at 8:00 AM.")
+else:
+    time_passed = now - start_time
+    time_left = end_time - now
+
+    total_day_seconds = (end_time - start_time).total_seconds()
+    passed_seconds = time_passed.total_seconds()
+    percent_used = round((passed_seconds / total_day_seconds) * 100, 1)
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric(
+        "Time Passed Since 8:00 AM",
+        f"{time_passed.seconds // 3600}h {(time_passed.seconds // 60) % 60}m"
+    )
+
+    col2.metric(
+        "Time Left Until Midnight",
+        f"{time_left.seconds // 3600}h {(time_left.seconds // 60) % 60}m"
+    )
+
+    col3.progress(min(int(percent_used), 100), text=f"{percent_used}% of your day used")
+
+    # Optional motivational hint
+    if percent_used > 90:
+        st.info("🔔 It's late — wrap up and plan tomorrow!")
+    elif percent_used > 60:
+        st.warning("🕒 Day's ending — prioritize your remaining tasks!")
+    elif percent_used < 25:
+        st.success("🌞 Good start! Plenty of time to accomplish your goals.")
+    else:
+        st.info("✅ Keep the momentum going!")
+
 
 # Sidebar
 with st.sidebar:
