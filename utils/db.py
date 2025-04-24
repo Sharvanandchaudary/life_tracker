@@ -15,7 +15,7 @@ def init_db():
     conn = connect_db()
     cursor = conn.cursor()
 
-    # --- Study Logs ---
+    # --- Study Logs (supports multiple entries per day) ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS study_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,16 +26,18 @@ def init_db():
         )
     ''')
 
-    # --- Job Applications Tracker ---
+    # --- Job Applications Tracker (multiple per day) ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS job_apps (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             log_date TEXT NOT NULL,
-            count INTEGER NOT NULL
+            company TEXT NOT NULL,
+            role TEXT,
+            status TEXT DEFAULT 'Applied'
         )
     ''')
 
-    # --- Things to Learn Tracker ---
+    # --- Things to Learn Tracker (daily topic list) ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS learn_list (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +77,7 @@ def init_db():
         )
     ''')
 
-    # --- Diary Logs ---
+    # --- Diary Logs (1 entry per day) ---
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS diary_logs (
             log_date TEXT PRIMARY KEY,
