@@ -20,6 +20,32 @@ conn = connect_db()
 cursor = conn.cursor()
 
 st.set_page_config(page_title="Life Tracker", layout="wide")
+import os
+import random
+
+# Load wallpapers from folder
+wallpaper_folder = "wallpapers"
+wallpapers = [f for f in os.listdir(wallpaper_folder) if f.endswith(("jpg", "jpeg", "png"))]
+
+# Randomly pick one
+selected_wallpaper = random.choice(wallpapers)
+
+# Apply background using custom CSS
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url('{wallpaper_folder}/{selected_wallpaper}');
+        background-size: cover;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-position: center;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # -------------------------
 # ⏳ Daily Time Tracker
 # -------------------------
