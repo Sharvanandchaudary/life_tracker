@@ -327,10 +327,10 @@ elif nav == "📖 Diary":
         key="mic-diary",
         mode=WebRtcMode.SENDRECV,
         audio_receiver_size=256,
-        client_settings={"media_stream_constraints": {"audio": True, "video": False}},
         audio_processor_factory=AudioProcessor,
         async_processing=True,
     )
+
 
     if webrtc_ctx.audio_processor:
         st.info("🎙️ Recording... Speak now.")
