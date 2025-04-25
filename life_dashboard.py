@@ -217,43 +217,48 @@ elif nav == "😴 Sleep":
 
 
 elif nav == "📷 Photo Journal":
-    st.header("📷 Photo Journal")
+    st.header("📷 Daily Photo Memories")
 
-    today = str(date.today())
-    photo_folder = f"photos/{today}"
+    # Upload Section
+    st.subheader("📤 Upload Photos")
+    uploaded_files = st.file_uploader("Upload one or more images", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+
+    folder_tag = st.selectbox("Select a folder/tag", ["Favorites", "Important", "Travel", "Personal", "Other"])
+    captions = {}
+
+    photo_folder = "photos"
     os.makedirs(photo_folder, exist_ok=True)
 
-    st.subheader("📤 Upload Today's Photos")
-    uploaded_photos = st.file_uploader("Select photos", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
-    
-    tags = ["Favorites", "Important", "Memes", "Travel", "Personal"]
-    
-    for file in uploaded_photos:
-        tag = st.selectbox(f"Tag for {file.name}", tags, key=file.name)
-        caption = st.text_input(f"Caption for {file.name}", key=f"{file.name}_cap")
+    if uploaded_files:
+        for file in uploaded_files:
+            captions[file.name] = st.text_input(f"Caption for {file.name}", key=file.name)
 
-        if st.button(f"Save {file.name}", key=f"{file.name}_btn"):
-            save_path = os.path.join(photo_folder, file.name)
-            with open(save_path, "wb") as f:
-                f.write(file.getbuffer())
+        if st.button("Save Photos"):
+            today = str(date.today())
+            for file in uploaded_files:
+                file_path = os.path.join(photo_folder, f"{today}_{file.name}")
+                with open(file_path, "wb") as f:
+                    f.write(file.read())
 
-            cursor.execute(
-                "INSERT INTO photo_logs (log_date, file_path, caption, tag) VALUES (?, ?, ?, ?)",
-                (today, save_path, caption, tag)
-            )
-            conn.commit()
-            st.success(f"{file.name} saved!")
+                cursor.execute(
+                    "INSERT INTO photo_logs (log_date, file_path, caption, folder) VALUES (?, ?, ?, ?)",
+                    (today, file_path, captions[file.name], folder_tag)
+                )
+                conn.commit()
+            st.success("Photos uploaded and saved!")
 
-    # View Photos by Date
-    st.subheader("📅 View Photos by Day")
+    # Viewer Section
+    st.subheader("📅 View by Date")
     cursor.execute("SELECT DISTINCT log_date FROM photo_logs ORDER BY log_date DESC")
     dates = [row[0] for row in cursor.fetchall()]
     
     if dates:
-        selected_day = st.selectbox("Select a date", dates)
-        cursor.execute("SELECT file_path, caption, tag FROM photo_logs WHERE log_date = ?", (selected_day,))
-        for file_path, caption, tag in cursor.fetchall():
-            st.image(file_path, caption=f"{tag} | {caption}", use_column_width=True)
+        selected_date = st.selectbox("Pick a date", dates)
+        cursor.execute("SELECT file_path, caption, folder FROM photo_logs WHERE log_date = ?", (selected_date,))
+        photos = cursor.fetchall()
+
+        for path, cap, tag in photos:
+            st.image(path, caption=f"{cap} ({tag})", use_column_width=True)
     else:
         st.info("No photos found.")
 
