@@ -164,7 +164,8 @@ elif nav == "📚 Study":
             st.markdown(f"- **Summary:** {summary}")
             st.markdown(f"- **Duration:** {duration} hrs")
             st.markdown("---")
-
+    else:
+        st.info("No study logs found.")
 
 # FINANCE FORM
 elif nav == "💰 Finance":
