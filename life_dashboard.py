@@ -128,10 +128,12 @@ if nav == "🏠 Home":
     col2.metric("Total Income", f"${df['finance']['income'].tail(7).sum():.2f}")
     col3.metric("Avg Sleep", f"{df['sleep']['duration'].tail(7).mean():.1f} hrs")
     col4.metric("New Debts", f"${df['debt']['total'].sum():.2f}" if not df['debt'].empty else "$0")
-# STUDY FOR
-elif nav == "Study":
+
+
+elif nav == "📚 Study":
     st.header("📚 Study Tracker")
 
+    # Add Log
     with st.form("study_form"):
         topic = st.text_input("Topic you studied")
         summary = st.text_area("Summary of what you learned")
@@ -147,21 +149,7 @@ elif nav == "Study":
             conn.commit()
             st.success("Study log added!")
 
-    st.subheader("📅 View Study History")
-    cursor.execute("SELECT DISTINCT log_date FROM study_logs ORDER BY log_date DESC")
-    available_dates = [row[0] for row in cursor.fetchall()]
-    selected_date = st.selectbox("Select a date to view logs", available_dates)
-
-    if selected_date:
-        cursor.execute("SELECT topic, summary, duration FROM study_logs WHERE log_date = ?", (selected_date,))
-        for topic, summary, duration in cursor.fetchall():
-            st.markdown(f"**🗓 Date:** {selected_date}")
-            st.markdown(f"- **Topic:** {topic}")
-            st.markdown(f"- **Summary:** {summary}")
-            st.markdown(f"- **Duration:** {duration} hrs")
-            st.markdown("---")
-
-    # Past logs display
+    # View Logs
     st.subheader("📅 View Study History")
     cursor.execute("SELECT DISTINCT log_date FROM study_logs ORDER BY log_date DESC")
     available_dates = [row[0] for row in cursor.fetchall()]
@@ -171,10 +159,12 @@ elif nav == "Study":
         cursor.execute("SELECT topic, summary, duration FROM study_logs WHERE log_date = ?", (selected_date,))
         rows = cursor.fetchall()
         for topic, summary, duration in rows:
-            st.markdown(f"**Topic:** {topic}")
-            st.markdown(f"- ⏱ Duration: {duration} hr")
-            st.markdown(f"- 📝 Summary: {summary}")
+            st.markdown(f"**🗓 {selected_date}**")
+            st.markdown(f"- **Topic:** {topic}")
+            st.markdown(f"- **Summary:** {summary}")
+            st.markdown(f"- **Duration:** {duration} hrs")
             st.markdown("---")
+
 
 # FINANCE FORM
 elif nav == "💰 Finance":
