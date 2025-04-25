@@ -6,5 +6,9 @@ pytz
 SpeechRecognition
 pydub
 streamlit-webrtc
-
+streamlit-webrtc
+pydub
+SpeechRecognition
+numpy
+scipy
 

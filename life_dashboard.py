@@ -9,6 +9,7 @@ from pydub import AudioSegment
 from io import BytesIO
 from datetime import datetime, date, timedelta 
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
+
 import av
 import numpy as np
 import tempfile
@@ -279,18 +280,22 @@ elif nav == "📷 Photo Journal":
 
 
 elif nav == "📖 Diary":
+    import speech_recognition as sr
+    from pydub import AudioSegment
+    from io import BytesIO
     from streamlit_webrtc import webrtc_streamer, WebRtcMode
     import av
     import numpy as np
     import tempfile
+    from scipy.io.wavfile import write
 
     st.header("📖 Daily Diary & Accomplishments")
     today = str(date.today())
-    transcript = ""  # Stores audio-based text
+    transcript = ""
 
-    # 🎙️ Option 1: Upload Voice Diary
-    st.subheader("🎙️ Upload a Voice Diary (MP3/WAV)")
-    audio_file = st.file_uploader("Upload your voice note", type=["mp3", "wav"])
+    # 🎙️ Option 1: Upload a voice file
+    st.subheader("🎙️ Upload Voice Diary (MP3/WAV)")
+    audio_file = st.file_uploader("Upload your audio", type=["mp3", "wav"])
 
     if audio_file:
         try:
@@ -304,15 +309,12 @@ elif nav == "📖 Diary":
             with sr.AudioFile(wav_io) as source:
                 audio_data = recognizer.record(source)
                 transcript = recognizer.recognize_google(audio_data)
-
-            st.success("✅ Uploaded voice transcribed successfully!")
-        except sr.UnknownValueError:
-            st.error("❌ Could not understand uploaded audio.")
-        except sr.RequestError as e:
-            st.error(f"❌ Google Speech API error: {e}")
+            st.success("📝 Transcribed successfully from uploaded file!")
+        except Exception as e:
+            st.error(f"❌ Transcription failed: {e}")
 
     # 🎤 Option 2: Record Live with Microphone
-    st.subheader("🎤 Record Voice Diary (Mic Input)")
+    st.subheader("🎤 Record Voice Diary")
     class AudioProcessor:
         def __init__(self):
             self.frames = []
@@ -322,7 +324,7 @@ elif nav == "📖 Diary":
             return av.AudioFrame.from_ndarray(frame.to_ndarray(), layout="mono")
 
     webrtc_ctx = webrtc_streamer(
-        key="diary-record",
+        key="mic-diary",
         mode=WebRtcMode.SENDRECV,
         audio_receiver_size=256,
         client_settings={"media_stream_constraints": {"audio": True, "video": False}},
@@ -331,31 +333,28 @@ elif nav == "📖 Diary":
     )
 
     if webrtc_ctx.audio_processor:
-        st.info("🎙️ Speak now — your audio is being recorded.")
-        if st.button("🔁 Transcribe Recording"):
-            frames = webrtc_ctx.audio_processor.frames
-            if frames:
-                audio_array = np.concatenate(frames).astype(np.int16)
+        st.info("🎙️ Recording... Speak now.")
+        if st.button("🔁 Transcribe Mic Recording"):
+            if webrtc_ctx.audio_processor.frames:
+                audio_array = np.concatenate(webrtc_ctx.audio_processor.frames).astype(np.int16)
                 with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-                    from scipy.io.wavfile import write
                     write(f.name, 48000, audio_array)
-
                     recognizer = sr.Recognizer()
                     with sr.AudioFile(f.name) as source:
                         audio_data = recognizer.record(source)
                         try:
                             transcript = recognizer.recognize_google(audio_data)
-                            st.success("✅ Live voice transcribed!")
+                            st.success("🎧 Live audio transcribed successfully!")
                         except sr.UnknownValueError:
-                            st.error("❌ Could not understand audio.")
+                            st.error("Could not understand audio.")
                         except sr.RequestError as e:
-                            st.error(f"❌ Google Speech API error: {e}")
+                            st.error(f"Speech API error: {e}")
             else:
-                st.warning("No audio recorded yet.")
+                st.warning("No audio was captured. Try again.")
 
-    # 📝 Manual or Transcribed Entry
+    # 📝 Text Entry + Save
     st.subheader("📝 What did you accomplish today?")
-    diary_entry = st.text_area("Write or edit your diary entry", value=transcript, height=200)
+    diary_entry = st.text_area("Write or edit your diary entry here", value=transcript, height=200)
 
     if st.button("✅ Save Diary Entry"):
         cursor.execute(
@@ -365,13 +364,12 @@ elif nav == "📖 Diary":
         conn.commit()
         st.success("📝 Diary entry saved!")
 
-    # 📅 Past Logs
+    # 📅 Past Entries
     st.subheader("📅 Past Diary Entries")
     cursor.execute("SELECT log_date, entry FROM diary_logs ORDER BY log_date DESC LIMIT 10")
     for log_date, entry in cursor.fetchall():
         st.markdown(f"**{log_date}**\n> {entry}")
         st.markdown("---")
-
 
 # TRENDS
 elif nav == "📈 Trends":
