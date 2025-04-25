@@ -4,6 +4,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import sqlite3
+import speech_recognition as sr
+from pydub import AudioSegment
+from io import BytesIO
 from datetime import datetime, date, timedelta 
 
 from utils.db import init_db, connect_db
@@ -272,38 +275,53 @@ elif nav == "📷 Photo Journal":
 
 
 elif nav == "📖 Diary":
-    st.header("📖 Daily Accomplishments")
+    st.header("📖 Daily Diary & Accomplishments")
 
-    # 📝 Input Form
-    with st.form("diary_form"):
-        entry = st.text_area("What did you accomplish today?")
-        submitted = st.form_submit_button("Submit Diary Entry")
+    today = str(date.today())
 
-        if submitted:
-            try:
-                today = str(date.today())
-                cursor.execute(
-                    "INSERT OR REPLACE INTO diary_logs (log_date, entry) VALUES (?, ?)",
-                    (today, entry)
-                )
-                conn.commit()
-                st.success("Diary entry saved!")
-            except Exception as e:
-                st.error(f"Failed to save diary: {e}")
+    # 🎙️ Voice Diary Upload
+    st.subheader("🎙️ Voice Diary Entry (Optional)")
+    audio_file = st.file_uploader("Upload voice note (MP3/WAV)", type=["mp3", "wav"])
 
-    # 📅 Display Past Entries
+    transcript = ""  # Initialize to hold voice result
+
+    if audio_file:
+        try:
+            audio_format = audio_file.type.split("/")[1]
+            audio = AudioSegment.from_file(audio_file, format=audio_format)
+            wav_io = BytesIO()
+            audio.export(wav_io, format="wav")
+            wav_io.seek(0)
+
+            recognizer = sr.Recognizer()
+            with sr.AudioFile(wav_io) as source:
+                audio_data = recognizer.record(source)
+                transcript = recognizer.recognize_google(audio_data)
+
+            st.success("✅ Voice successfully transcribed!")
+        except sr.UnknownValueError:
+            st.error("Could not understand audio.")
+        except sr.RequestError as e:
+            st.error(f"Google Speech API error: {e}")
+
+    # 📝 Text Diary Entry (editable)
+    st.subheader("📝 What did you accomplish today?")
+    diary_entry = st.text_area("Write or edit your diary entry here", value=transcript, height=200)
+
+    if st.button("Save Diary Entry"):
+        cursor.execute(
+            "INSERT OR REPLACE INTO diary_logs (log_date, entry) VALUES (?, ?)",
+            (today, diary_entry)
+        )
+        conn.commit()
+        st.success("Diary entry saved!")
+
+    # 📅 Show Past Entries
     st.subheader("📅 Past Diary Entries")
-    try:
-        cursor.execute("SELECT log_date, entry FROM diary_logs ORDER BY log_date DESC LIMIT 10")
-        rows = cursor.fetchall()
-        if not rows:
-            st.info("No diary entries found.")
-        else:
-            for log_date, entry in rows:
-                st.markdown(f"**{log_date}**\n> {entry}")
-                st.markdown("---")
-    except Exception as e:
-        st.error(f"Error loading diary entries: {e}")
+    cursor.execute("SELECT log_date, entry FROM diary_logs ORDER BY log_date DESC LIMIT 10")
+    for log_date, entry in cursor.fetchall():
+        st.markdown(f"**{log_date}**\n> {entry}")
+        st.markdown("---")
 
 
 # TRENDS
