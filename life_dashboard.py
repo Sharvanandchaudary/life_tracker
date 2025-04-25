@@ -1,4 +1,5 @@
-
+import os
+from datetime import date
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -217,44 +218,51 @@ elif nav == "😴 Sleep":
 
 
 elif nav == "📷 Photo Journal":
-    st.header("📷 Daily Photo Memories")
+    st.header("📷 Daily Photo Journal")
+
+    # Ensure photo folder exists
+    photo_folder = "photos"
+    os.makedirs(photo_folder, exist_ok=True)
+
+    today = str(date.today())
 
     # Upload Section
-    st.subheader("📤 Upload Photos")
-    uploaded_files = st.file_uploader("Upload one or more images", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    st.subheader("📤 Upload Today's Photos")
+    uploaded_files = st.file_uploader(
+        "Upload images", 
+        type=["jpg", "jpeg", "png"], 
+        accept_multiple_files=True
+    )
 
     folder_tag = st.selectbox("Select a folder/tag", ["Favorites", "Important", "Travel", "Personal", "Other"])
     captions = {}
-
-    photo_folder = "photos"
-    os.makedirs(photo_folder, exist_ok=True)
 
     if uploaded_files:
         for file in uploaded_files:
             captions[file.name] = st.text_input(f"Caption for {file.name}", key=file.name)
 
-        if st.button("Save Photos"):
-            today = str(date.today())
+        if st.button("Save All Photos"):
             for file in uploaded_files:
-                file_path = os.path.join(photo_folder, f"{today}_{file.name}")
-                with open(file_path, "wb") as f:
-                    f.write(file.read())
+                safe_name = file.name.replace(" ", "_")
+                save_path = os.path.join(photo_folder, f"{today}_{safe_name}")
+                with open(save_path, "wb") as f:
+                    f.write(file.getbuffer())
 
                 cursor.execute(
-                    "INSERT INTO photo_logs (log_date, file_path, caption, folder) VALUES (?, ?, ?, ?)",
-                    (today, file_path, captions[file.name], folder_tag)
+                    "INSERT INTO photo_logs (log_date, file_path, caption, tag) VALUES (?, ?, ?, ?)",
+                    (today, save_path, captions[file.name], folder_tag)
                 )
                 conn.commit()
-            st.success("Photos uploaded and saved!")
+            st.success("All photos saved!")
 
-    # Viewer Section
-    st.subheader("📅 View by Date")
+    # View Photos by Date
+    st.subheader("📅 View Past Photos")
     cursor.execute("SELECT DISTINCT log_date FROM photo_logs ORDER BY log_date DESC")
-    dates = [row[0] for row in cursor.fetchall()]
-    
-    if dates:
-        selected_date = st.selectbox("Pick a date", dates)
-        cursor.execute("SELECT file_path, caption, folder FROM photo_logs WHERE log_date = ?", (selected_date,))
+    available_dates = [row[0] for row in cursor.fetchall()]
+
+    if available_dates:
+        selected_date = st.selectbox("Select a date", available_dates)
+        cursor.execute("SELECT file_path, caption, tag FROM photo_logs WHERE log_date = ?", (selected_date,))
         photos = cursor.fetchall()
 
         for path, cap, tag in photos:
