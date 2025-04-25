@@ -66,7 +66,7 @@ else:
 with st.sidebar:
     st.image("https://i.imgur.com/2V5cF3P.png", width=100)  # Placeholder profile pic
     st.title("🌟 Good Morning, User")
-    nav = st.radio("Navigate", ["🏠 Home", "📚 Study", "💰 Finance", "😴 Sleep", "📖 Diary", "📈 Trends","📷 Photo Journal",
+    nav = st.radio("Navigate", ["🏠 Home", "📚 Study", "💰 Finance", "😴 Sleep", "📖 Diary", "📈 Trends","📷 Photo Journal"
 ])
 
 # Load data
