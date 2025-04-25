@@ -85,6 +85,18 @@ def init_db():
         )
     ''')
 
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS photo_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        log_date TEXT,
+        file_path TEXT,
+        caption TEXT,
+        tag TEXT
+    )
+    ''')
+
+
     conn.commit()
     conn.close()
 

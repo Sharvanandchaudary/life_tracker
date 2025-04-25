@@ -66,7 +66,8 @@ else:
 with st.sidebar:
     st.image("https://i.imgur.com/2V5cF3P.png", width=100)  # Placeholder profile pic
     st.title("🌟 Good Morning, User")
-    nav = st.radio("Navigate", ["🏠 Home", "📚 Study", "💰 Finance", "😴 Sleep", "📖 Diary", "📈 Trends"])
+    nav = st.radio("Navigate", ["🏠 Home", "📚 Study", "💰 Finance", "😴 Sleep", "📖 Diary", "📈 Trends","📷 Photo Journal",
+])
 
 # Load data
 def load_data():
@@ -213,6 +214,49 @@ elif nav == "😴 Sleep":
             )
             conn.commit()
             st.success("Sleep log saved!")
+
+
+elif nav == "📷 Photo Journal":
+    st.header("📷 Photo Journal")
+
+    today = str(date.today())
+    photo_folder = f"photos/{today}"
+    os.makedirs(photo_folder, exist_ok=True)
+
+    st.subheader("📤 Upload Today's Photos")
+    uploaded_photos = st.file_uploader("Select photos", type=["jpg", "jpeg", "png"], accept_multiple_files=True)
+    
+    tags = ["Favorites", "Important", "Memes", "Travel", "Personal"]
+    
+    for file in uploaded_photos:
+        tag = st.selectbox(f"Tag for {file.name}", tags, key=file.name)
+        caption = st.text_input(f"Caption for {file.name}", key=f"{file.name}_cap")
+
+        if st.button(f"Save {file.name}", key=f"{file.name}_btn"):
+            save_path = os.path.join(photo_folder, file.name)
+            with open(save_path, "wb") as f:
+                f.write(file.getbuffer())
+
+            cursor.execute(
+                "INSERT INTO photo_logs (log_date, file_path, caption, tag) VALUES (?, ?, ?, ?)",
+                (today, save_path, caption, tag)
+            )
+            conn.commit()
+            st.success(f"{file.name} saved!")
+
+    # View Photos by Date
+    st.subheader("📅 View Photos by Day")
+    cursor.execute("SELECT DISTINCT log_date FROM photo_logs ORDER BY log_date DESC")
+    dates = [row[0] for row in cursor.fetchall()]
+    
+    if dates:
+        selected_day = st.selectbox("Select a date", dates)
+        cursor.execute("SELECT file_path, caption, tag FROM photo_logs WHERE log_date = ?", (selected_day,))
+        for file_path, caption, tag in cursor.fetchall():
+            st.image(file_path, caption=f"{tag} | {caption}", use_column_width=True)
+    else:
+        st.info("No photos found.")
+
 
 elif nav == "📖 Diary":
     st.header("📖 Daily Accomplishments")
